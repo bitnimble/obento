@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "importHelpers": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es2018",
+      "es2019",
+      "es2020",
+      "esnext"
+    ],
+    "moduleResolution": "node",
+    "strict": true,
+    "target": "es6",
+    "sourceMap": true,
+    "module": "commonjs",
+    "baseUrl": "src",
+    "rootDir": ".",
+    "outDir": "dist",
+    "plugins": [
+      {
+        "name": "typescript-plugin-css-modules",
+        "options": {
+          "customMatcher": "\\.css$"
+        }
+      }
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+    ]
+  },
+  "include": [
+    "src",
+    "config"
+  ]
+}
