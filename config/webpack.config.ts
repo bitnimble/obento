@@ -129,7 +129,7 @@ const config = (env: any): Configuration => {
     output: {
       filename: 'index.js',
       path: path.resolve(__dirname, `../dist/${page}/`),
-      publicPath: '/static/',
+      publicPath: devMode ? '/' : '/static/',
     },
   };
 };
