@@ -8,11 +8,11 @@ export function checkIs<T extends { type: string }>(
   throw new Error('Expected obj to be equal to something, but it was not');
 }
 
-export function checkExists<T>(obj: T | undefined): T {
+export function checkExists<T>(obj: T): NonNullable<T> {
   if (obj == null) {
     throw new Error('Expected property to be defined, but found undefined');
   }
-  return obj;
+  return obj as NonNullable<T>;
 }
 
 export function checkState(condition: boolean, message?: string): asserts condition {

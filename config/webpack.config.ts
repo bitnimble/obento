@@ -9,6 +9,7 @@ import { PageManifest } from './manifest';
 
 const config = (env: any): Configuration => {
   const page = env.entry;
+  const proxying = !!env.proxying;
   if (page == null) {
     throw new Error('Page was not specified. Exiting.');
   }
@@ -129,7 +130,7 @@ const config = (env: any): Configuration => {
     output: {
       filename: 'index.js',
       path: path.resolve(__dirname, `../dist/${page}/`),
-      publicPath: devMode ? '/' : '/static/',
+      publicPath: devMode && !proxying ? '/' : '/static/',
     },
   };
 };
