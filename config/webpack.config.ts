@@ -5,9 +5,10 @@ import * as path from 'path';
 // @ts-ignore
 import postcssModulesValuesReplace from 'postcss-modules-values-replace';
 import { Configuration } from 'webpack';
+import { Configuration as DevConfiguration } from 'webpack-dev-server';
 import { PageManifest } from './manifest';
 
-const config = (env: any): Configuration => {
+const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
   const page = env.entry;
   const proxying = !!env.proxying;
   if (page == null) {
@@ -39,6 +40,9 @@ const config = (env: any): Configuration => {
     devtool: devMode && 'cheap-module-source-map',
     entry: path.resolve(__dirname, `../src/pages/${page}/index.tsx`),
     target: 'browserslist:> 0.5%, last 2 versions, Firefox ESR, not dead',
+    devServer: {
+      historyApiFallback: true,
+    },
     module: {
       rules: [
         {

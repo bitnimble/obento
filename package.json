@@ -33,6 +33,7 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.5",
     "@types/terser-webpack-plugin": "^5.0.2",
+    "@types/webpack-dev-server": "^3.11.5",
     "argv": "^0.0.2",
     "autoprefixer": "^10.2.5",
     "css-loader": "^5.1.1",
