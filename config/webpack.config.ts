@@ -17,10 +17,20 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
 
   const devMode = env.mode === 'development';
 
-  const manifest: PageManifest = require(path.resolve(
-    __dirname,
-    `../src/pages/${page}/manifest.ts`
-  )).manifest;
+  let manifestFile: any;
+  let isExternalPage = false;
+  try {
+    // Try loading from pages folder
+    manifestFile = require(path.resolve(
+      __dirname,
+      `../src/pages/${page}/manifest.ts`
+    ))
+  } catch (e) {
+    // Try as a relative path instead
+    manifestFile = require(path.resolve(`${page}/manifest.ts`));
+    isExternalPage = true;
+  }
+  const manifest: PageManifest = manifestFile.manifest;
   const fonts = manifest.head?.googleFonts?.map(s => {
     if (typeof s === 'string') {
       return `family=${s.replace(/ /g, '+')}`;
@@ -35,10 +45,21 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
       : undefined;
 
   const faviconPath = path.resolve(__dirname, `../src/pages/${page}/favicon.png`);
+
+  const modules = [
+    path.resolve(__dirname, '../node_modules'),
+    path.resolve(__dirname, `../src/pages/${page}/node_modules`),
+    path.resolve(__dirname, '../src'),
+    // Hack -- fix this
+    ...(isExternalPage ? [path.resolve(page, '../')] : [])
+  ];
+
   return {
     mode: devMode ? 'development' : 'production',
     devtool: devMode && 'cheap-module-source-map',
-    entry: path.resolve(__dirname, `../src/pages/${page}/index.tsx`),
+    entry: isExternalPage
+        ? path.resolve(`${page}/index.tsx`)
+        : path.resolve(__dirname, `../src/pages/${page}/index.tsx`),
     target: 'browserslist:> 0.5%, last 2 versions, Firefox ESR, not dead',
     devServer: {
       historyApiFallback: true,
@@ -79,7 +100,7 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
                   plugins: [
                     postcssModulesValuesReplace({
                       resolve: {
-                        modules: [path.resolve(__dirname, '../node_modules'), path.resolve(__dirname, '../src')],
+                        modules,
                       },
                     }),
                     'postcss-url',
@@ -125,11 +146,7 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
     resolve: {
       // js and jsx includes for node_modules
       extensions: ['.tsx', '.ts', '.js', '.jsx', '.css', '.jpeg'],
-      modules: [
-        path.resolve(__dirname, '../node_modules'),
-        path.resolve(__dirname, `../src/pages/${page}/node_modules`),
-        path.resolve(__dirname, '../src'),
-      ],
+      modules,
     },
     output: {
       filename: 'index.js',
@@ -138,5 +155,6 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
     },
   };
 };
+
 
 export default config;
