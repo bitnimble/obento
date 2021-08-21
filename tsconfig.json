@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
+    "useDefineForClassFields": true,
     "importHelpers": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

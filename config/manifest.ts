@@ -6,4 +6,5 @@ export type PageManifest = {
   head?: {
     googleFonts?: Font[];
   };
+  fallback?: Record<string, any>,
 };

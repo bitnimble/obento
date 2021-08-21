@@ -111,24 +111,19 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
                 },
               },
             },
-            'resolve-url-loader',
           ],
         },
         {
           test: /\.(png|jpe?g|gif|svg|webp|woff|woff2|eot|ttf|otf)$/i,
-          use: [
-            {
-              loader: 'file-loader',
-              options: {
-                name: (path: string) => {
-                  if (path === faviconPath) {
-                    return 'favicon.png';
-                  }
-                  return '[contenthash].[ext]';
-                },
+          type: 'asset/resource',
+          generator: {
+            filename: (path: string) => {
+              if (path === faviconPath) {
+                return 'favicon.png';
               }
-            },
-          ],
+              return '[contenthash].[ext]';
+            }
+          },
         },
       ],
     },
@@ -144,6 +139,7 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
       }),
     ],
     resolve: {
+      fallback: manifest.fallback,
       // js and jsx includes for node_modules
       extensions: ['.tsx', '.ts', '.js', '.jsx', '.css', '.jpeg'],
       modules,
