@@ -1,0 +1,6 @@
+@value gridBaseline from "pages/paradb/base/metrics/metrics.css";
+
+.table {
+    width: 100%;
+    border-spacing: 0 gridBaseline;
+}
