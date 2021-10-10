@@ -1,32 +1,20 @@
 import { Columns } from 'base/table/table';
-import { IComputedValue, IObservableValue, makeAutoObservable } from 'mobx';
+import { makeAutoObservable } from 'mobx';
+
+export type SortDirection = 'asc' | 'desc';
 
 export class TableStore<T, N extends number> {
   sortColumn: number;
-  sortDirection: 'asc' | 'desc' = 'asc';
-
-  get sortedData() {
-    const { sortColumn, sortDirection, columns } = this;
-    const data = this.data.get();
-    if (!data || data.length === 0) {
-      return;
-    }
-    const column = columns[sortColumn];
-    if (!column) {
-      return;
-    }
-    const directionMultiplier = sortDirection === 'asc' ? 1 : -1;
-
-    return data.sort((a: T, b: T) => column.sort(a, b) * directionMultiplier);
-  }
+  sortDirection: SortDirection;
 
   constructor(
-      private readonly data: IObservableValue<T[] | undefined> | IComputedValue<T[] | undefined>,
       readonly columns: Columns<T, N>,
       sortColumn: number = 0,
+      sortDirection: SortDirection = 'asc',
   ) {
     makeAutoObservable(this);
     this.sortColumn = sortColumn;
+    this.sortDirection = sortDirection;
   }
 }
 
@@ -35,14 +23,23 @@ export class TablePresenter<T, N extends number> {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  setSortColumn(column: number) {
+  private setSortColumn(column: number) {
     if (column < 0 || column >= this.store.columns.length) {
       return;
     }
     this.store.sortColumn = column;
   }
 
-  setSortDirection(direction: 'asc' | 'desc') {
+  private setSortDirection(direction: 'asc' | 'desc') {
     this.store.sortDirection = direction;
+  }
+
+  onColumnClick(columnIndex: number) {
+    if (columnIndex !== this.store.sortColumn) {
+      this.setSortColumn(columnIndex);
+      this.setSortDirection('asc');
+    } else {
+      this.setSortDirection(this.store.sortDirection === 'asc' ? 'desc' : 'asc');
+    }
   }
 }

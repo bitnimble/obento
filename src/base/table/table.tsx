@@ -1,4 +1,6 @@
+import { SortDirection } from 'base/table/table_presenter';
 import classNames from 'classnames';
+import { computed, IComputedValue, IObservableValue } from 'mobx';
 import { observer } from 'mobx-react';
 import React from 'react';
 import styles from './table.css';
@@ -21,52 +23,129 @@ type TableProps<T, N extends number> = {
   rowClassname?: string,
   cellClassname?: string,
   columns: Columns<T, N>,
-  data?: T[],
+  data?: IObservableValue<T[] | undefined> | IComputedValue<T[] | undefined>,
+  sortColumn: number,
+  sortDirection: SortDirection,
   rowMapper: (t: T) => Row<N>,
   fetchData: () => void,
+  onColumnClick: (columnIndex: number) => void,
+};
+
+type RowMemoProps<T, N extends number> = {
+  value: T,
+  rowMapper: (t: T) => Row<N>,
+  cellClassname?: string,
+  rowClassname?: string,
 };
 
 @observer
-export class Table<T, N extends number> extends React.Component<TableProps<T, N>> {
+class RowMemo<T, N extends number> extends React.Component<RowMemoProps<T, N>> {
+  render() {
+    const { value, rowClassname, rowMapper } = this.props;
+    const cellClass = classNames(styles.cell, this.props.cellClassname);
+    const rowClass = classNames(styles.row, rowClassname);
+    const row = rowMapper(value);
+    return (
+        <tr className={rowClass}>
+          {row.Cells.map((Cell, x) => (
+              <td className={cellClass} key={x}>
+                <Cell/>
+              </td>
+          ))}
+        </tr>
+    );
+  }
+}
+
+@observer
+export class Table<T extends { id: string }, N extends number>
+    extends React.Component<TableProps<T, N>> {
   onMount() {
     this.props.fetchData();
   }
 
+  private get LoadingRow() {
+    const cellClass = classNames(styles.cell, this.props.cellClassname);
+    return (
+        <tr className={cellClass} style={{ gridColumn: '1 / -1' }}>
+          <td>Loading...</td>
+        </tr>
+    );
+  }
+
+  private get Rows() {
+    const { rowClassname, cellClassname, rowMapper } = this.props;
+    const data = this.sortedData;
+    if (!data) {
+      return this.LoadingRow;
+    }
+    return (
+        <>
+          {data.map(row => (
+              <RowMemo
+                  value={row}
+                  rowMapper={rowMapper}
+                  cellClassname={cellClassname}
+                  rowClassname={rowClassname}
+                  key={row.id}
+              />
+          ))}
+        </>
+    );
+  }
+
+  @computed.struct
+  private get sortedData() {
+    const { data, sortColumn, sortDirection, columns } = this.props;
+    const _data = data?.get();
+    const column = columns[sortColumn];
+    if (!_data || _data.length === 0 || !column) {
+      return;
+    }
+    const directionMultiplier = sortDirection === 'asc' ? 1 : -1;
+    return _data.sort((a, b) => column.sort(a, b) * directionMultiplier);
+  }
+
   render() {
-    const { tableClassname, rowClassname, cellClassname, columns, data, rowMapper } = this.props;
+    const {
+      tableClassname,
+      columns,
+      sortColumn,
+      sortDirection,
+      onColumnClick,
+    } = this.props;
 
     const tableClass = classNames(styles.table, tableClassname);
-    const rowClass = classNames(styles.row, rowClassname);
-    const cellClass = classNames(styles.cell, cellClassname);
+    const cellClass = classNames(styles.cell, this.props.cellClassname);
 
-    const rows = data == null
-        ? (
-            <tr className={cellClass} style={{ gridColumn: '1 / -1' }}>
-              <td>Loading...</td>
-            </tr>
-        )
-        : data.map((t, y) => (
-            <tr className={rowClass} key={y}>
-              {rowMapper(t).Cells.map((Cell, x) => (
-                  <td className={cellClass} key={x}>
-                    <Cell/>
-                  </td>
-              ))}
-            </tr>
-        ));
     return (
         <table className={tableClass}>
-          <thead>
+          <thead className={styles.header}>
             <tr>
               {columns.map((c, x) => (
-                  <th className={cellClass} key={x}>{c.content}</th>
+                  <th
+                      className={cellClass}
+                      key={x}
+                      onMouseDown={preventDoubleClickSelection}
+                      onClick={() => onColumnClick(x)}
+                  >
+                    {c.content} {sortColumn === x && (
+                        sortDirection === 'asc' ? '🠕' : '🠗'
+                    )}
+                  </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows}
+            {this.Rows}
           </tbody>
         </table>
     );
   }
 }
+
+const preventDoubleClickSelection = (e: React.MouseEvent) => {
+  if (e.detail > 1) {
+    e.preventDefault();
+  }
+};

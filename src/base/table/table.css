@@ -4,3 +4,7 @@
     width: 100%;
     border-spacing: 0 gridBaseline;
 }
+
+.header .cell {
+    cursor: pointer;
+}
