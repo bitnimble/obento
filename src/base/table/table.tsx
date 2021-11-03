@@ -73,11 +73,23 @@ export class Table<T extends { id: string }, N extends number>
     );
   }
 
+  private get NoResultsRow() {
+    const cellClass = classNames(styles.cell, this.props.cellClassname);
+    return (
+        <tr className={cellClass} style={{ gridColumn: '1 / -1' }}>
+          <td>No results found.</td>
+        </tr>
+    );
+  }
+
   private get Rows() {
     const { rowClassname, cellClassname, rowMapper } = this.props;
     const data = this.sortedData;
     if (!data) {
       return this.LoadingRow;
+    }
+    if (data.length === 0) {
+      return this.NoResultsRow;
     }
     return (
         <>
@@ -99,7 +111,7 @@ export class Table<T extends { id: string }, N extends number>
     const { data, sortColumn, sortDirection, columns } = this.props;
     const _data = data?.get();
     const column = columns[sortColumn];
-    if (!_data || _data.length === 0 || !column) {
+    if (!_data || !column) {
       return;
     }
     const directionMultiplier = sortDirection === 'asc' ? 1 : -1;
