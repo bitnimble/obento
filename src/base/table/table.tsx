@@ -24,7 +24,7 @@ type TableProps<T, N extends number> = {
   rowClassname?: string,
   cellClassname?: string,
   columns: Columns<T, N>,
-  data?: IObservableValue<T[] | undefined> | IComputedValue<T[] | undefined>,
+  data?: T[] | undefined,
   sortColumn: number,
   sortDirection: SortDirection,
   rowMapper: (t: T) => Row<N>,
@@ -84,8 +84,7 @@ export class Table<T extends { id: string }, N extends number>
   }
 
   private get Rows() {
-    const { rowClassname, cellClassname, rowMapper } = this.props;
-    const data = this.sortedData;
+    const { data, rowClassname, cellClassname, rowMapper } = this.props;
     if (!data) {
       return this.LoadingRow;
     }
@@ -105,18 +104,6 @@ export class Table<T extends { id: string }, N extends number>
           ))}
         </>
     );
-  }
-
-  @computed.struct
-  private get sortedData() {
-    const { data, sortColumn, sortDirection, columns } = this.props;
-    const _data = data?.get();
-    const column = columns[sortColumn];
-    if (!_data || !column) {
-      return;
-    }
-    const directionMultiplier = sortDirection === 'asc' ? 1 : -1;
-    return _data.sort((a, b) => column.sort(a, b) * directionMultiplier);
   }
 
   render() {

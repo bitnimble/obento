@@ -11,6 +11,7 @@ export function createTable<T extends { id: string }, N extends number, N2 exten
   columns: Columns<T, N>,
   rowMapper: (t: T) => Row<N2>,
   fetchData: () => void,
+  onSortChange?: () => void,
   tableClassname?: string,
   rowClassname?: string,
   cellClassname?: string,
@@ -22,27 +23,31 @@ export function createTable<T extends { id: string }, N extends number, N2 exten
     columns,
     rowMapper,
     fetchData,
+    onSortChange,
     tableClassname,
     rowClassname,
     cellClassname,
     defaultSortColumn,
     defaultSortDirection,
   } = opts;
-  const store = new TableStore(columns, defaultSortColumn, defaultSortDirection);
-  const presenter = new TablePresenter(store);
+  const store = new TableStore(data, columns, defaultSortColumn, defaultSortDirection);
+  const presenter = new TablePresenter(store, onSortChange);
 
-  return observer(() => (
-      <Table
-          tableClassname={tableClassname}
-          rowClassname={rowClassname}
-          cellClassname={cellClassname}
-          columns={store.columns}
-          data={data}
-          sortColumn={store.sortColumn}
-          sortDirection={store.sortDirection}
-          onColumnClick={presenter.onColumnClick}
-          rowMapper={rowMapper}
-          fetchData={fetchData}
-      />
-  ));
+  return {
+    store,
+    Component: observer(() => (
+        <Table
+            tableClassname={tableClassname}
+            rowClassname={rowClassname}
+            cellClassname={cellClassname}
+            columns={store.columns}
+            data={store.sortedData}
+            sortColumn={store.sortColumn}
+            sortDirection={store.sortDirection}
+            onColumnClick={presenter.onColumnClick}
+            rowMapper={rowMapper}
+            fetchData={fetchData}
+        />
+    )),
+  };
 }
