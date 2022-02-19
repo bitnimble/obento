@@ -1,6 +1,6 @@
 import { SortDirection } from 'base/table/table_presenter';
 import classNames from 'classnames';
-import { computed, IComputedValue, IObservableValue } from 'mobx';
+import { computed, IComputedValue, IObservableValue, trace } from 'mobx';
 import { observer } from 'mobx-react';
 import React from 'react';
 import styles from './table.css';
@@ -8,6 +8,7 @@ import styles from './table.css';
 type Tuple<T, N extends number> = [T, ...T[]] & { length: N };
 
 export type Row<N extends number> = {
+  className?: string,
   Cells: Tuple<React.ComponentType, N>,
 };
 
@@ -43,8 +44,8 @@ class RowMemo<T, N extends number> extends React.Component<RowMemoProps<T, N>> {
   render() {
     const { value, rowClassname, rowMapper } = this.props;
     const cellClass = classNames(styles.cell, this.props.cellClassname);
-    const rowClass = classNames(styles.row, rowClassname);
     const row = rowMapper(value);
+    const rowClass = classNames(styles.row, rowClassname, row.className);
     return (
         <tr className={rowClass}>
           {row.Cells.map((Cell, x) => (
