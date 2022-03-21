@@ -15,6 +15,7 @@ export type Row<N extends number> = {
 export type Column<T> = {
   content: React.ReactNode,
   sort: (a: T, b: T) => number,
+  width?: string,
 };
 
 export type Columns<T, N extends number> = Tuple<Column<T>, N>;
@@ -128,6 +129,7 @@ export class Table<T extends { id: string }, N extends number>
                       key={x}
                       onMouseDown={preventDoubleClickSelection}
                       onClick={() => onColumnClick(x)}
+                      style={{ width: c.width }}
                   >
                     {c.content} {sortColumn === x && (
                         sortDirection === 'asc' ? '🠕' : '🠗'
