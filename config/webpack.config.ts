@@ -121,6 +121,7 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
           description: manifest.description || '',
           head: mergedHead,
         },
+        hash: true,
         template: path.resolve(__dirname, './static/index.html'),
       }),
     ],
