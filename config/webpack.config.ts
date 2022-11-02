@@ -7,6 +7,7 @@ import postcssModulesValuesReplace from 'postcss-modules-values-replace';
 import { Configuration } from 'webpack';
 import { Configuration as DevConfiguration } from 'webpack-dev-server';
 import { PageManifest } from './manifest';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
   const page = env.entry;
@@ -42,12 +43,14 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
       return `family=${s.name.replace(/ /g, '+')}:wght@${s.weights.join(';')}`;
     })
     .join('&');
+  const additionalTags = manifest.head?.additionalTags?.join('\n') || '';
   const mergedHead = fonts
     ? `
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?${fonts}&display=swap" rel="stylesheet">
+${additionalTags}
 `
-    : undefined;
+    : additionalTags;
 
   const faviconPath = path.resolve(__dirname, `../src/pages/${page}/favicon.png`);
 
@@ -68,52 +71,63 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
     target: 'browserslist:> 0.5%, last 2 versions, Firefox ESR, not dead',
     devServer: { historyApiFallback: true },
     module: {
-      rules: [{
-        test: /\.tsx?$/,
-        loader: 'ts-loader',
-        exclude: /node_modules/,
-        options: { transpileOnly: true },
-      }, {
-        test: /\.css$/,
-        use: [{ loader: 'style-loader', options: { injectType: 'singletonStyleTag' } }, {
-          loader: 'css-loader',
-          options: {
-            importLoaders: 2,
-            modules: {
-              localIdentName: devMode
-                ? '[path][name]__[local]--[hash:base64:5]'
-                : '[hash:base64:6]',
+      rules: [
+        {
+          test: /\.tsx?$/,
+          loader: 'ts-loader',
+          exclude: /node_modules/,
+          options: { transpileOnly: true },
+        },
+        {
+          test: /\.css$/,
+          use: [
+            MiniCssExtractPlugin.loader,
+            {
+              loader: 'css-loader',
+              options: {
+                importLoaders: 2,
+                modules: {
+                  localIdentName: devMode
+                    ? '[path][name]__[local]--[hash:base64:5]'
+                    : '[hash:base64:6]',
+                },
+              },
             },
-          },
-        }, {
-          loader: 'postcss-loader',
-          options: {
-            sourceMap: true,
-            postcssOptions: {
-              plugins: [
-                postcssModulesValuesReplace({ resolve: { modules } }),
-                'postcss-url',
-                'postcss-calc',
-                'postcss-color-function',
-                'autoprefixer',
-              ],
+            {
+              loader: 'postcss-loader',
+              options: {
+                sourceMap: true,
+                postcssOptions: {
+                  plugins: [
+                    postcssModulesValuesReplace({ resolve: { modules } }),
+                    'postcss-url',
+                    'postcss-calc',
+                    'postcss-color-function',
+                    'autoprefixer',
+                  ],
+                },
+              },
             },
-          },
-        }],
-      }, {
-        test: /\.(png|jpe?g|gif|svg|webp|woff|woff2|eot|ttf|otf)$/i,
-        type: 'asset/resource',
-        generator: {
-          filename: (path: string) => {
-            if (path === faviconPath) {
-              return 'favicon.png';
-            }
-            return '[contenthash].[ext]';
+          ],
+        },
+        {
+          test: /\.(png|jpe?g|gif|svg|webp|woff|woff2|eot|ttf|otf)$/i,
+          type: 'asset/resource',
+          generator: {
+            filename: (path: string) => {
+              if (path === faviconPath) {
+                return 'favicon.png';
+              }
+              return '[contenthash].[ext]';
+            },
           },
         },
-      }],
+      ],
     },
     plugins: [
+      new MiniCssExtractPlugin({
+        filename: '[name].[contenthash].css',
+      }),
       new ForkTsCheckerWebpackPlugin(),
       new HtmlWebpackPlugin({
         templateParameters: {
@@ -132,9 +146,9 @@ const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
       modules,
     },
     output: {
-      filename: 'index.js',
+      filename: 'index.[contenthash].js',
+      publicPath: '/static/',
       path: path.resolve(__dirname, `../dist/${page}/`),
-      publicPath: devMode && !proxying ? '/' : '/static/',
     },
   };
 };

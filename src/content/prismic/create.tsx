@@ -30,7 +30,7 @@ class PrismicApi<PageSpecificType extends CustomType> implements ContentReposito
     const resp = await this.api.query(
       query,
       options
-        ? { fetch: options.fields.map(field => `${type}.${field}`)}
+        ? { fetch: options.fields.map(field => `${type}.${String(field)}`)}
         : undefined,
     );
     const results = resp.results;

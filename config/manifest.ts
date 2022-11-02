@@ -5,6 +5,7 @@ export type PageManifest = {
   description?: string,
   head?: {
     googleFonts?: Font[];
+    additionalTags?: string[],
   };
   fallback?: Record<string, any>,
 };
