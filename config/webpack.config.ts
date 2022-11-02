@@ -8,6 +8,7 @@ import { Configuration } from 'webpack';
 import { Configuration as DevConfiguration } from 'webpack-dev-server';
 import { PageManifest } from './manifest';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import FontPreloadPlugin from 'webpack-font-preload-plugin';
 
 const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
   const page = env.entry;
@@ -125,6 +126,9 @@ ${additionalTags}
       ],
     },
     plugins: [
+      new FontPreloadPlugin({
+        extensions: ['otf'],
+      }),
       new MiniCssExtractPlugin({
         filename: '[name].[contenthash].css',
       }),

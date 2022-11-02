@@ -53,6 +53,7 @@
     "typescript-plugin-css-modules": "^3.4.0",
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.0.0"
+    "webpack-dev-server": "^4.0.0",
+    "webpack-font-preload-plugin": "^1.5.0"
   }
 }
