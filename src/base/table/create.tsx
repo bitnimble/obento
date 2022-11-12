@@ -10,7 +10,6 @@ export function createTable<T extends { id: string }, N extends number, N2 exten
   data: IObservableValue<T[] | undefined> | IComputedValue<T[] | undefined>,
   columns: Columns<T, N>,
   rowMapper: (t: T) => Row<N2>,
-  fetchData: () => void,
   onSortChange?: () => void,
   tableClassname?: string,
   rowClassname?: string,
@@ -22,7 +21,6 @@ export function createTable<T extends { id: string }, N extends number, N2 exten
     data,
     columns,
     rowMapper,
-    fetchData,
     onSortChange,
     tableClassname,
     rowClassname,
@@ -41,12 +39,11 @@ export function createTable<T extends { id: string }, N extends number, N2 exten
             rowClassname={rowClassname}
             cellClassname={cellClassname}
             columns={store.columns}
-            data={store.sortedData}
+            data={store.data.get()}
             sortColumn={store.sortColumn}
             sortDirection={store.sortDirection}
             onColumnClick={presenter.onColumnClick}
             rowMapper={rowMapper}
-            fetchData={fetchData}
         />
     )),
   };

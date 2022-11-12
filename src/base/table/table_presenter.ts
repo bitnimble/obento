@@ -1,11 +1,11 @@
 import { Columns } from 'base/table/table';
-import { computed, IComputedValue, IObservableValue, makeAutoObservable } from 'mobx';
+import { IComputedValue, IObservableValue, makeAutoObservable } from 'mobx';
 
 export type SortDirection = 'asc' | 'desc';
 
 export class TableStore<T, N extends number> {
-  sortColumn: number;
-  sortDirection: SortDirection;
+  sortColumn: number | undefined;
+  sortDirection: SortDirection | undefined;
 
   constructor(
       readonly data: IObservableValue<T[] | undefined> | IComputedValue<T[] | undefined>,
@@ -16,18 +16,6 @@ export class TableStore<T, N extends number> {
     makeAutoObservable(this);
     this.sortColumn = sortColumn;
     this.sortDirection = sortDirection;
-  }
-
-  @computed.struct
-  get sortedData() {
-    const { data, sortColumn, sortDirection, columns } = this;
-    const _data = data?.get();
-    const column = columns[sortColumn];
-    if (!_data || !column) {
-      return;
-    }
-    const directionMultiplier = sortDirection === 'asc' ? 1 : -1;
-    return _data.sort((a, b) => column.sort(a, b) * directionMultiplier);
   }
 }
 

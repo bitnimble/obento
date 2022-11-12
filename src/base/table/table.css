@@ -5,6 +5,6 @@
     border-spacing: 0 gridBaseline;
 }
 
-.header .cell {
+.header .cell.sortable {
     cursor: pointer;
 }

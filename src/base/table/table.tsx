@@ -1,6 +1,5 @@
 import { SortDirection } from 'base/table/table_presenter';
 import classNames from 'classnames';
-import { computed, IComputedValue, IObservableValue, trace } from 'mobx';
 import { observer } from 'mobx-react';
 import React from 'react';
 import styles from './table.css';
@@ -14,7 +13,7 @@ export type Row<N extends number> = {
 
 export type Column<T> = {
   content: React.ReactNode,
-  sort: (a: T, b: T) => number,
+  sortLabel?: keyof T,
   width?: string,
 };
 
@@ -26,10 +25,9 @@ type TableProps<T, N extends number> = {
   cellClassname?: string,
   columns: Columns<T, N>,
   data?: T[] | undefined,
-  sortColumn: number,
-  sortDirection: SortDirection,
+  sortColumn: number | undefined,
+  sortDirection: SortDirection | undefined,
   rowMapper: (t: T) => Row<N>,
-  fetchData: () => void,
   onColumnClick: (columnIndex: number) => void,
 };
 
@@ -62,10 +60,6 @@ class RowMemo<T, N extends number> extends React.Component<RowMemoProps<T, N>> {
 @observer
 export class Table<T extends { id: string }, N extends number>
     extends React.Component<TableProps<T, N>> {
-  onMount() {
-    this.props.fetchData();
-  }
-
   private get LoadingRow() {
     const cellClass = classNames(styles.cell, this.props.cellClassname);
     return (
@@ -125,10 +119,10 @@ export class Table<T extends { id: string }, N extends number>
             <tr>
               {columns.map((c, x) => (
                   <th
-                      className={cellClass}
+                      className={classNames(cellClass, !!c.sortLabel && styles.sortable)}
                       key={x}
                       onMouseDown={preventDoubleClickSelection}
-                      onClick={() => onColumnClick(x)}
+                      onClick={c.sortLabel ? () => onColumnClick(x) : undefined}
                       style={{ width: c.width }}
                   >
                     {c.content} {sortColumn === x && (
