@@ -1,5 +1,6 @@
 import { SortDirection } from 'base/table/table_presenter';
 import classNames from 'classnames';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import React from 'react';
 import styles from './table.css';
@@ -14,7 +15,7 @@ export type Row<N extends number> = {
 export type Column<T> = {
   content: React.ReactNode,
   sortLabel?: keyof T,
-  width?: string,
+  style?: React.CSSProperties,
 };
 
 export type Columns<T, N extends number> = Tuple<Column<T>, N>;
@@ -123,7 +124,7 @@ export class Table<T extends { id: string }, N extends number>
                       key={x}
                       onMouseDown={preventDoubleClickSelection}
                       onClick={c.sortLabel ? () => onColumnClick(x) : undefined}
-                      style={{ width: c.width }}
+                      style={toJS(c.style)}
                   >
                     {c.content} {sortColumn === x && (
                         sortDirection === 'asc' ? '🠕' : '🠗'
