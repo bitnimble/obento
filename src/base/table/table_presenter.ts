@@ -41,7 +41,7 @@ export class TablePresenter<T, N extends number> {
   onColumnClick(columnIndex: number) {
     if (columnIndex !== this.store.sortColumn) {
       this.setSortColumn(columnIndex);
-      this.setSortDirection('asc');
+      this.setSortDirection('desc');
     } else {
       this.setSortDirection(this.store.sortDirection === 'asc' ? 'desc' : 'asc');
     }
