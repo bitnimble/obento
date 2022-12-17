@@ -12,11 +12,12 @@
       "es2018",
       "es2019",
       "es2020",
+      "es2021",
       "esnext"
     ],
     "moduleResolution": "node",
     "strict": true,
-    "target": "es6",
+    "target": "es2021",
     "sourceMap": true,
     "module": "commonjs",
     "baseUrl": "src",

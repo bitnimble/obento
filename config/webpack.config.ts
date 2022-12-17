@@ -10,29 +10,32 @@ import { PageManifest } from './manifest';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import FontPreloadPlugin from 'webpack-font-preload-plugin';
 
-const config = (env: any): Configuration & { devServer?: DevConfiguration } => {
-  const page = env.entry;
-  const proxying = !!env.proxying;
-  if (page == null) {
+function getPageRoot(pageInput: string) {
+  const pageName = path.basename(pageInput);
+  try {
+    const manifest = require(path.resolve(__dirname, `../src/pages/${pageInput}/manifest.ts`));
+    return [manifest, path.resolve(__dirname, `../src/pages/${pageInput}`), pageName];
+  } catch (e) { }
+
+  try {
+    console.log('Could not resolve manifest in src/pages, attempting to resolve as an absolute path');
+    const manifest = require(path.resolve(`${pageInput}/manifest.ts`));
+    return [manifest, path.resolve(`${pageInput}`), pageName];
+  } catch (e) { }
+
+  throw new Error(`Could not find manifest.ts for page ${pageInput}`);
+}
+
+const config = (env: any): Configuration => {
+  if (env.entry == null) {
     throw new Error('Page was not specified. Exiting.');
   }
 
-  const devMode = env.mode === 'development';
+  console.log('Loading project manifest...')
 
-  let manifestFile: any;
-  let isExternalPage = false;
-  try {
-    // Try loading from pages folder
-    manifestFile = require(path.resolve(__dirname, `../src/pages/${page}/manifest.ts`));
-  } catch (e) {
-    console.error(e);
-    console.log(
-      'Could not resolve manifest in src/pages, attempting to resolve as a relative path',
-    );
-    // Try as a relative path instead
-    manifestFile = require(path.resolve(`${page}/manifest.ts`));
-    isExternalPage = true;
-  }
+  const devMode = env.mode === 'development';
+  const [manifestFile, pageRoot, pageName] = getPageRoot(env.entry);
+  console.log(`Loaded manifest from ${pageRoot}/manifest.ts`);
   const manifest: PageManifest = manifestFile.manifest;
   const fonts = manifest
     .head
@@ -53,22 +56,18 @@ ${additionalTags}
 `
     : additionalTags;
 
-  const faviconPath = path.resolve(__dirname, `../src/pages/${page}/favicon.png`);
+  const faviconPath = path.resolve(`${pageRoot}/favicon.png`);
 
   const modules = [
     path.resolve(__dirname, '../node_modules'),
-    path.resolve(__dirname, `../src/pages/${page}/node_modules`),
+    path.resolve(`${pageRoot}/node_modules`),
     path.resolve(__dirname, '../src'),
-    // Hack -- fix this
-    ...(isExternalPage ? [path.resolve(page, '../')] : []),
   ];
 
   return {
     mode: devMode ? 'development' : 'production',
     devtool: devMode && 'cheap-module-source-map',
-    entry: isExternalPage
-      ? path.resolve(`${page}/index.tsx`)
-      : path.resolve(__dirname, `../src/pages/${page}/index.tsx`),
+    entry: path.resolve(`${pageRoot}/index.tsx`),
     target: 'browserslist:> 0.5%, last 2 versions, Firefox ESR, not dead',
     devServer: { historyApiFallback: true },
     module: {
@@ -152,7 +151,7 @@ ${additionalTags}
     output: {
       filename: 'index.[contenthash].js',
       publicPath: '/static/',
-      path: path.resolve(__dirname, `../dist/${page}/`),
+      path: path.resolve(__dirname, `../dist/${pageName}/`),
     },
   };
 };

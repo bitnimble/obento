@@ -33,7 +33,6 @@
     "@types/react": "^17.0.19",
     "@types/react-dom": "^17.0.9",
     "@types/terser-webpack-plugin": "^5.0.4",
-    "@types/webpack-dev-server": "^3.11.5",
     "argv": "^0.0.2",
     "autoprefixer": "^10.3.1",
     "css-loader": "^6.2.0",
@@ -53,7 +52,7 @@
     "typescript-plugin-css-modules": "^3.4.0",
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.0.0",
+    "webpack-dev-server": "^4.11.1",
     "webpack-font-preload-plugin": "^1.5.0"
   }
 }
